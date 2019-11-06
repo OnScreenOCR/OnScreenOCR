@@ -12,9 +12,14 @@ namespace OnScreenOCR
 {
     class OCR
     {
-        // you could download trained data from
-        // https://github.com/tesseract-ocr/tessdata_best
+        // trained data: https://github.com/tesseract-ocr/tessdata_best
         public static readonly string TesseractDataPath = "./tessdata";
+        public static readonly bool TesseractDataPathCreated = new Func<bool>(() =>
+        {
+            if (!Directory.Exists(TesseractDataPath))
+                Directory.CreateDirectory(TesseractDataPath);
+            return true;
+        })();
         public static readonly IList<string> Languages = Directory
             .GetFiles(TesseractDataPath, "*.traineddata")
             .Select(f => Path.GetFileNameWithoutExtension(f))
@@ -22,6 +27,8 @@ namespace OnScreenOCR
         // for parse text in multiple rows and columns
         public static readonly PageIteratorLevel OCRPageIteratorLevel = PageIteratorLevel.TextLine;
         public static readonly PageSegMode OCRPageSegMode = PageSegMode.SparseTextOsd;
+        public static int HorizontalSlotFactor = 5;
+        public static int VerticalSlotFactor = 1;
         public static readonly Regex ReplaceSpaceBetweenNonASCII = new Regex(
             @"(?<=[^\x00-\x7F])\s+(?=[^\x00-\x7F])", RegexOptions.Compiled);
 
@@ -59,7 +66,7 @@ namespace OnScreenOCR
                 var item = sorted[x];
                 if (item == null)
                     continue;
-                var slot = item.Item1.Height * 2;
+                var slot = item.Item1.Height * HorizontalSlotFactor;
                 for (int y = x + 1; y < sorted.Count; ++y)
                 {
                     var otherItem = sorted[y];
@@ -81,7 +88,7 @@ namespace OnScreenOCR
                 var item = sorted[x];
                 if (item == null)
                     continue;
-                var slot = item.Item1.Height;
+                var slot = item.Item1.Height * VerticalSlotFactor;
                 for (int y = x + 1; y < sorted.Count; ++y)
                 {
                     var otherItem = sorted[y];

@@ -49,6 +49,7 @@ namespace OnScreenOCR
             StartPosition = FormStartPosition.Manual;
             Location = new Point(config.WindowX, config.WindowY);
             Size = new Size(config.WindowWidth, config.WindowHeight);
+            Icon = Properties.Resources.icon;
             toolPanel.Height = ToolbarHeight;
             toolPanel.Dock = DockStyle.Top;
             viewWrapperPanel.Dock = DockStyle.Fill;
@@ -253,8 +254,17 @@ namespace OnScreenOCR
 
             DisableTransparentArea();
 
-            var blocks = OCR.Parse(screenShot,
-                languageDropdown.SelectedItem?.ToString());
+            var language = languageDropdown.SelectedItem?.ToString();
+            if (string.IsNullOrEmpty(language))
+            {
+                MessageBox.Show(this,
+                    "No language selected, please download trained data from\r\n" +
+                    "https://github.com/tesseract-ocr/tessdata_best\r\n" +
+                    "and move it into folder " + OCR.TesseractDataPath,
+                    "Error");
+                return;
+            }
+            var blocks = OCR.Parse(screenShot, language);
             var converter = new FontConverter();
             foreach (var block in blocks)
             {
